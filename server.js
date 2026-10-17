@@ -17,12 +17,12 @@ function roomOf(code) {
   return rooms.get(code);
 }
 
-function broadcastPeers(code, leftIds) {
+// left: مصفوفة {id, p} لمن غادر (مع بياناتهم الأخيرة حتى يعرف اللاعبون أن المضيف غادر)
+function broadcastPeers(code, left) {
   const room = rooms.get(code);
   if (!room) return;
   const peers = [...room.entries()].map(([id, p]) => ({ id, p: p.presence || {} }));
-  const left = (leftIds || []).map((id) => ({ id, p: {} }));
-  const msg = JSON.stringify({ t: 'peers', peers, left });
+  const msg = JSON.stringify({ t: 'peers', peers, left: left || [] });
   for (const p of room.values()) {
     if (p.ws.readyState === 1) p.ws.send(msg);
   }
@@ -70,7 +70,12 @@ wss.on('connection', (ws) => {
       const d = x.d || {};
       const target = d.to;
       if (target && room.has(target)) {
-        room.get(target).ws.send(JSON.stringify({ t: 'emit', e: x.e, d, from: id }));
+        const tw = room.get(target).ws;
+        if (tw.readyState === 1) tw.send(JSON.stringify({ t: 'emit', e: x.e, d, from: id }));
+      } else if (!target) {
+        for (const [pid, p] of room.entries()) {
+          if (pid !== id && p.ws.readyState === 1) p.ws.send(JSON.stringify({ t: 'emit', e: x.e, d, from: id }));
+        }
       }
       return;
     }
@@ -80,8 +85,9 @@ wss.on('connection', (ws) => {
     if (!id || !code) return;
     const room = rooms.get(code);
     if (!room) return;
+    const gone = room.get(id);
     room.delete(id);
-    broadcastPeers(code, [id]);
+    broadcastPeers(code, [{ id, p: (gone && gone.presence) || {} }]);
     if (room.size === 0) rooms.delete(code);
   });
 });

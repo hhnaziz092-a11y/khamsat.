@@ -29,6 +29,8 @@ function broadcastPeers(code, left) {
 }
 
 wss.on('connection', (ws) => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
   let id = null;
   let code = null;
 
@@ -91,6 +93,15 @@ wss.on('connection', (ws) => {
     if (room.size === 0) rooms.delete(code);
   });
 });
+
+// نبضات للحفاظ على الاتصال حياً على Render
+setInterval(() => {
+  wss.clients.forEach((c) => {
+    if (c.isAlive === false) return c.terminate();
+    c.isAlive = false;
+    c.ping();
+  });
+}, 25000);
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {

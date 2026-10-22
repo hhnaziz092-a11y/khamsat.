@@ -1,16 +1,13 @@
+
 {
-  "name": "khamsat-server",
+  "name": "khamsat-game-server",
   "version": "1.0.0",
-  "private": true,
-  "description": "خادم لعبة الخمسات والجاسوس: غرف أونلاين وحسابات",
+  "description": "Multiplayer WebSocket server for Khamsat game and Spy game",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
   "dependencies": {
-    "ws": "^8.18.0"
+    "ws": "^8.16.0"
   }
 }

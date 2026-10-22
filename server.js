@@ -1,6 +1,8 @@
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const server = http.createServer((req, res) => {
@@ -19,8 +21,16 @@ const server = http.createServer((req, res) => {
   }
 
   if (pathname === '/') {
-    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end('Khamsat Game Server is running!');
+    const filePath = path.join(__dirname, 'index.html');
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('خادم ألعاب خمسات يعمل الآن! (الرجاء التأكد من وجود ملف index.html في المجلد)');
+      } else {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(data);
+      }
+    });
     return;
   }
 
@@ -197,7 +207,6 @@ wss.on('connection', (ws) => {
 
     if (data.t === 'sub') {
       ws.subRooms = true;
-      // Send current rooms
       const list = [];
       for (const [code, r] of rooms.entries()) {
         if (r.meta && r.meta.pub === 1) {
@@ -340,7 +349,6 @@ function handleLeave(ws) {
     rooms.delete(code);
   } else {
     if (ws === r.hostWs) {
-      // assign new host
       const nextWs = r.peers.keys().next().value;
       r.hostWs = nextWs;
     }

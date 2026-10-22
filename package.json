@@ -1,15 +1,16 @@
 {
-  "name": "khamsat-rooms",
+  "name": "khamsat-server",
   "version": "1.0.0",
   "private": true,
+  "description": "خادم لعبة الخمسات والجاسوس: غرف أونلاين وحسابات",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "ws": "^8.18.0"
-  },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
   }
 }
